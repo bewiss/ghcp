@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Coffee Extractor</title>
+  <style>
+    :root { --bg:#0b0f12; --fg:#eaeef2; --muted:#9aa4af; --acc:#6bbcff; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--fg); }
+    .wrap { max-width: 880px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 28px; margin: 0 0 6px; }
+    p { color: var(--muted); margin-top: 0; }
+    .card { background: #141a20; border: 1px solid #202833; border-radius: 12px; padding: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    label { display:block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    input, textarea { width: 100%; background: #0e141a; color: var(--fg); border: 1px solid #263041; border-radius: 8px; padding: 10px 12px; outline: none; }
+    textarea { min-height: 90px; resize: vertical; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .grid-1 { display:grid; grid-template-columns: 1fr; gap: 12px; }
+    .actions { display:flex; gap: 12px; margin-top: 14px; }
+    button { background: var(--acc); color: #06223b; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    small { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Coffee Extractor</h1>
+    <p>Scrape a coffee product page and auto-fill details. Fields remain editable.</p>
+
+    <div class="card" style="margin-bottom: 16px;">
+      <label for="url">Product URL</label>
+      <input id="url" type="url" placeholder="https://example.com/product" value="https://thebarn.de/de/products/elida-gesha" />
+      <div class="actions">
+        <button id="getInfoBtn">Get info</button>
+        <small id="status"></small>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label for="price">Price (EUR)</label>
+          <input id="price" placeholder="e.g. 14.90" />
+        </div>
+        <div>
+          <label for="weight">Weight (g)</label>
+          <input id="weight" placeholder="e.g. 250" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="processing">Processing</label>
+          <input id="processing" placeholder="e.g. washed" />
+        </div>
+        <div>
+          <label for="farmer">Farmer / Producer</label>
+          <input id="farmer" placeholder="e.g. Lamastus Family Estates" />
+        </div>
+      </div>
+      <div class="grid-1">
+        <div>
+          <label for="flavor">Flavor notes</label>
+          <textarea id="flavor" placeholder="e.g. jasmine, bergamot"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="exportBtn">Export data</button>
+        <small id="exportStatus"></small>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+  const btn = $("getInfoBtn");
+  const status = $("status");
+  const exportBtn = $("exportBtn");
+  const exportStatus = $("exportStatus");
+
+    btn.addEventListener("click", async () => {
+      const url = $("url").value.trim();
+      status.textContent = "Fetching...";
+      btn.disabled = true;
+      try {
+        const resp = await fetch(`/api/extract?url=${encodeURIComponent(url)}`);
+        const json = await resp.json();
+        if (!json.ok) throw new Error(json.error || "Request failed");
+        const d = json.data || {};
+        $("price").value = d?.price ?? "";
+        $("weight").value = d?.weight ?? "";
+        $("flavor").value = d?.flavor ?? "";
+        $("processing").value = d?.processing ?? "";
+        $("farmer").value = d?.farmer ?? "";
+        status.textContent = "Done";
+      } catch (e) {
+        console.error(e);
+        status.textContent = e.message || "Error";
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    exportBtn.addEventListener("click", async () => {
+      exportStatus.textContent = "Preparing export...";
+      exportBtn.disabled = true;
+      try {
+        const payload = {
+          url: $("url").value.trim(),
+          price: $("price").value.trim(),
+          weight: $("weight").value.trim(),
+          flavor: $("flavor").value.trim(),
+          processing: $("processing").value.trim(),
+          farmer: $("farmer").value.trim()
+        };
+        const resp = await fetch("/api/export", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(t || `HTTP ${resp.status}`);
+        }
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "coffee-data.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        exportStatus.textContent = "Downloaded";
+      } catch (e) {
+        console.error(e);
+        exportStatus.textContent = e.message || "Export failed";
+      } finally {
+        exportBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
