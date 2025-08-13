@@ -37,8 +37,8 @@ export async function extractCoffeeData(rawText) {
   const prompt = `
   Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
   Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
-  - Preis in EUR
-  - Gewicht in Gramm
+  - Preis in EUR ohne Wärhungszeichen
+  - Gewicht in Gramm ohne Einheit
   - Geschmacksnoten
   - Aufbereitung (Processing)
   - Farmer / Produzent

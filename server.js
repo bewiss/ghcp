@@ -45,44 +45,46 @@ app.post("/api/export", async (req, res) => {
     const beansHeaders = [
       "Name","Roaster","Roast date","Roast type","Degree of Roast","Custom degree of Roast","Blend","Weight","Cost","Flavour profile","Cupping points","Decaffeinated","Website","EAN / Articlenumber","Notes","Rating","Archived","Frozen Date","Unfrozen Date","Freezing Storage Type","Frozen Note","1. Country","1. Region","1. Farm","1. Farmer","1. Elevation","1. Variety","1. Processing","1. Harvested","1. Percentage","1. Bean certification","1. Fob Price","1. Purchasing Price"
     ];
-  beans.getRow(1).values = beansHeaders;
-    // Optionally map provided fields into a minimal data row (leave unspecified fields empty)
+    beans.getRow(1).values = beansHeaders;
+    // Map provided fields from request body to row order
+    const b = req.body || {};
+    const toBoolString = (v) => (typeof v === 'boolean') ? (v ? 'TRUE' : 'FALSE') : (v ?? "");
     const mappedRow = [
-      "", // Name
-      "", // Roaster
-      "", // Roast date
-      "", // Roast type
-      "", // Degree of Roast
-      "", // Custom degree of Roast
-      "", // Blend
-      weight || "", // Weight
-      "", // Cost
-      flavor || "", // Flavour profile
-      "", // Cupping points
-      (typeof req.body?.decaf !== 'undefined') ? String(req.body.decaf) : "", // Decaffeinated
-      url || "", // Website
-      "", // EAN / Articlenumber
-      "", // Notes
-      "", // Rating
-      (typeof req.body?.archived !== 'undefined') ? String(req.body.archived) : "", // Archived
-      "", // Frozen Date
-      "", // Unfrozen Date
-      req.body?.freezingStorageType || "", // Freezing Storage Type
-      "", // Frozen Note
-      "", // 1. Country
-      "", // 1. Region
-      "", // 1. Farm
-      req.body?.farmer || farmer || "", // 1. Farmer
-      "", // 1. Elevation
-      "", // 1. Variety
-      processing || "", // 1. Processing
-      "", // 1. Harvested
-      "", // 1. Percentage
-      "", // 1. Bean certification
-      "", // 1. Fob Price
-      ""  // 1. Purchasing Price
+      b.name || "",
+      b.roaster || "",
+      b.roastDate || "",
+      b.roastType || "",
+      b.degreeOfRoast || "",
+      b.customDegreeOfRoast || "",
+      b.blend || "",
+      b.weight || weight || "",
+      b.cost || b.price || "",
+      b.flavourProfile || flavor || "",
+      b.cuppingPoints || "",
+      toBoolString(b.decaf),
+      b.website || b.url || url || "",
+      b.ean || "",
+      b.notes || "",
+      b.rating || "",
+      toBoolString(b.archived),
+      b.frozenDate || "",
+      b.unfrozenDate || "",
+      b.freezingStorageType || "",
+      b.frozenNote || "",
+      b.country1 || "",
+      b.region1 || "",
+      b.farm1 || "",
+      b.farmer1 || farmer || "",
+      b.elevation1 || "",
+      b.variety1 || "",
+      b.processing1 || processing || "",
+      b.harvested1 || "",
+      b.percentage1 || "",
+      b.beanCertification1 || "",
+      b.fobPrice1 || "",
+      b.purchasingPrice1 || b.price || ""
     ];
-  beans.getRow(2).values = mappedRow;
+    beans.getRow(2).values = mappedRow;
 
     // Sheet 3: Bean_Information (headers start at A3)
     const info = wb.addWorksheet("Bean_Information");

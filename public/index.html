@@ -40,28 +40,166 @@
     <div class="card">
       <div class="grid">
         <div>
-          <label for="price">Price (EUR)</label>
-          <input id="price" placeholder="e.g. 14.90" />
+          <label for="name">Name</label>
+          <input id="name" placeholder="e.g. Elida Geisha" />
         </div>
         <div>
-          <label for="weight">Weight (g)</label>
-          <input id="weight" placeholder="e.g. 250" />
+          <label for="roaster">Roaster</label>
+          <input id="roaster" placeholder="e.g. The Barn" />
         </div>
       </div>
       <div class="grid">
         <div>
-          <label for="processing">Processing</label>
-          <input id="processing" placeholder="e.g. washed" />
+          <label for="roastDate">Roast date</label>
+          <input id="roastDate" type="date" />
         </div>
         <div>
-          <label for="farmer">Farmer / Producer</label>
-          <input id="farmer" placeholder="e.g. Lamastus Family Estates" />
+          <label for="roastType">Roast type</label>
+          <input id="roastType" placeholder="e.g. Espresso/Filter/Omni" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="degreeOfRoast">Degree of Roast</label>
+          <input id="degreeOfRoast" placeholder="e.g. City, Full City" />
+        </div>
+        <div>
+          <label for="customDegreeOfRoast">Custom degree of Roast</label>
+          <input id="customDegreeOfRoast" placeholder="Custom description" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="blend">Blend</label>
+          <input id="blend" placeholder="e.g. Single origin / Blend name" />
+        </div>
+        <div>
+          <label for="weight">Weight (g)</label>
+          <input id="weight" type="number" placeholder="e.g. 250" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="cost">Cost</label>
+          <input id="cost" type="number" step="0.01" placeholder="e.g. 39.50" />
+        </div>
+        <div>
+          <label for="flavourProfile">Flavour profile</label>
+          <input id="flavourProfile" placeholder="e.g. jasmine, bergamot" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="cuppingPoints">Cupping points</label>
+          <input id="cuppingPoints" type="number" step="0.1" placeholder="e.g. 87.5" />
+        </div>
+        <div>
+          <label for="website">Website</label>
+          <input id="website" type="url" placeholder="e.g. https://..." />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label><input id="decaf" type="checkbox" /> Decaffeinated</label>
+        </div>
+        <div>
+          <label for="ean">EAN / Articlenumber</label>
+          <input id="ean" placeholder="e.g. 123456789" />
         </div>
       </div>
       <div class="grid-1">
         <div>
-          <label for="flavor">Flavor notes</label>
-          <textarea id="flavor" placeholder="e.g. jasmine, bergamot"></textarea>
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Free text"></textarea>
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="rating">Rating</label>
+          <input id="rating" type="number" step="0.1" placeholder="e.g. 4.5" />
+        </div>
+        <div>
+          <label><input id="archived" type="checkbox" /> Archived</label>
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="frozenDate">Frozen Date</label>
+          <input id="frozenDate" type="date" />
+        </div>
+        <div>
+          <label for="unfrozenDate">Unfrozen Date</label>
+          <input id="unfrozenDate" type="date" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="freezingStorageType">Freezing Storage Type</label>
+          <input id="freezingStorageType" placeholder="e.g. COFFEE_BAG" />
+        </div>
+        <div>
+          <label for="frozenNote">Frozen Note</label>
+          <input id="frozenNote" placeholder="e.g. Lot split" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="country1">1. Country</label>
+          <input id="country1" placeholder="e.g. Panama" />
+        </div>
+        <div>
+          <label for="region1">1. Region</label>
+          <input id="region1" placeholder="e.g. Boquete" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="farm1">1. Farm</label>
+          <input id="farm1" placeholder="e.g. Elida Estate" />
+        </div>
+        <div>
+          <label for="farmer1">1. Farmer</label>
+          <input id="farmer1" placeholder="e.g. Lamastus Family Estates" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="elevation1">1. Elevation</label>
+          <input id="elevation1" placeholder="e.g. 1800m" />
+        </div>
+        <div>
+          <label for="variety1">1. Variety</label>
+          <input id="variety1" placeholder="e.g. Geisha" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="processing1">1. Processing</label>
+          <input id="processing1" placeholder="e.g. Washed" />
+        </div>
+        <div>
+          <label for="harvested1">1. Harvested</label>
+          <input id="harvested1" placeholder="e.g. 2024" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="percentage1">1. Percentage</label>
+          <input id="percentage1" type="number" step="0.01" placeholder="e.g. 100" />
+        </div>
+        <div>
+          <label for="beanCertification1">1. Bean certification</label>
+          <input id="beanCertification1" placeholder="e.g. Organic" />
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label for="fobPrice1">1. Fob Price</label>
+          <input id="fobPrice1" type="number" step="0.01" placeholder="e.g. 12.34" />
+        </div>
+        <div>
+          <label for="purchasingPrice1">1. Purchasing Price</label>
+          <input id="purchasingPrice1" type="number" step="0.01" placeholder="e.g. 39.50" />
         </div>
       </div>
       <div class="actions">
@@ -73,10 +211,28 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-  const btn = $("getInfoBtn");
-  const status = $("status");
-  const exportBtn = $("exportBtn");
-  const exportStatus = $("exportStatus");
+    const btn = $("getInfoBtn");
+    const status = $("status");
+    const exportBtn = $("exportBtn");
+    const exportStatus = $("exportStatus");
+
+    // Map all Beans headers to input ids
+    const fieldIds = [
+      'name','roaster','roastDate','roastType','degreeOfRoast','customDegreeOfRoast','blend','weight','cost','flavourProfile','cuppingPoints','decaf','website','ean','notes','rating','archived','frozenDate','unfrozenDate','freezingStorageType','frozenNote','country1','region1','farm1','farmer1','elevation1','variety1','processing1','harvested1','percentage1','beanCertification1','fobPrice1','purchasingPrice1'
+    ];
+
+    function getFormData() {
+      const data = {};
+      for (const id of fieldIds) {
+        const el = $(id);
+        if (!el) continue;
+        if (el.type === 'checkbox') data[id] = !!el.checked;
+        else data[id] = el.value.trim();
+      }
+      // include product page URL too
+      data.url = $("url").value.trim();
+      return data;
+    }
 
     btn.addEventListener("click", async () => {
       const url = $("url").value.trim();
@@ -86,12 +242,13 @@
         const resp = await fetch(`/api/extract?url=${encodeURIComponent(url)}`);
         const json = await resp.json();
         if (!json.ok) throw new Error(json.error || "Request failed");
-        const d = json.data || {};
-        $("price").value = d?.price ?? "";
-        $("weight").value = d?.weight ?? "";
-        $("flavor").value = d?.flavor ?? "";
-        $("processing").value = d?.processing ?? "";
-        $("farmer").value = d?.farmer ?? "";
+  const d = json.data || {};
+  // Map extraction to matching fields
+  $("weight").value = d?.weight ?? "";
+  $("flavourProfile").value = d?.flavor ?? "";
+  $("processing1").value = d?.processing ?? "";
+  $("farmer1").value = d?.farmer ?? "";
+  $("website").value = $("url").value;
         status.textContent = "Done";
       } catch (e) {
         console.error(e);
@@ -101,18 +258,11 @@
       }
     });
 
-    exportBtn.addEventListener("click", async () => {
+  exportBtn.addEventListener("click", async () => {
       exportStatus.textContent = "Preparing export...";
       exportBtn.disabled = true;
       try {
-        const payload = {
-          url: $("url").value.trim(),
-          price: $("price").value.trim(),
-          weight: $("weight").value.trim(),
-          flavor: $("flavor").value.trim(),
-          processing: $("processing").value.trim(),
-          farmer: $("farmer").value.trim()
-        };
+    const payload = getFormData();
         const resp = await fetch("/api/export", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
