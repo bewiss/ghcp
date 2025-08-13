@@ -22,33 +22,21 @@
     button:disabled { opacity: .6; cursor: not-allowed; }
     small { color: var(--muted); }
 
-  /* Make each field look like a clean row: [checkbox] Attribute: Value */
-  .grid > div, .grid-1 > div {
-    display: grid;
-    grid-template-columns: auto 220px 1fr; /* [ ] | Label | Value */
-    align-items: center; /* vertical align */
-    gap: 10px;
-    border: 1px solid #202833;
-    background: #10161d;
-    padding: 10px 12px;
-    border-radius: 10px;
-  }
-  /* Label with colon */
-  .grid > div > label,
-  .grid-1 > div > label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 0;
-    color: var(--muted);
-  }
-  .grid > div > label::after,
-  .grid-1 > div > label::after { content: ": "; margin-left: 2px; }
-  /* Inputs occupy the 3rd column and fill */
-  .grid > div > input, .grid > div > textarea,
-  .grid-1 > div > input, .grid-1 > div > textarea { width: 100%; }
+  /* Crisp modern table layout */
+  .table-wrap { border: 1px solid #202833; border-radius: 12px; overflow: hidden; background: #10161d; }
+  table.form-table { width: 100%; border-collapse: collapse; }
+  table.form-table col.checkbox { width: 36px; }
+  table.form-table col.label { width: 260px; }
+  table.form-table td { padding: 10px 12px; vertical-align: middle; }
+  table.form-table tbody tr { border-bottom: 1px solid #202833; }
+  table.form-table tbody tr:last-child { border-bottom: none; }
+  table.form-table tbody tr:hover { background: #0f151c; }
+  td.checkbox-cell { text-align: center; }
+  td.label-cell { color: var(--muted); white-space: nowrap; }
+  td.label-cell label::after { content: ":"; margin-left: 4px; }
+  td.value-cell input, td.value-cell textarea { width: 100%; }
   .extract-toggle { margin: 0; }
-  .extract-spacer { width: 16px; height: 16px; display: inline-block; }
+  .extract-spacer { display: inline-block; width: 16px; height: 16px; }
   </style>
 </head>
 <body>
@@ -65,175 +53,203 @@
       </div>
     </div>
 
-    <!-- Default values box (rows moved here via JS) -->
+    <!-- Default values box (table layout) -->
     <div class="card" id="defaultCard">
-      <div class="grid" id="defaultRows"></div>
+      <label>Default values</label>
+      <div class="table-wrap" style="margin-top:8px;">
+        <table class="form-table">
+          <colgroup>
+            <col class="checkbox" />
+            <col class="label" />
+            <col />
+          </colgroup>
+          <tbody id="defaultRows">
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="name">Name</label></td>
+              <td class="value-cell"><input id="name" placeholder="e.g. Elida Geisha" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="price">Price</label></td>
+              <td class="value-cell"><input id="price" type="number" step="0.01" placeholder="e.g. 39.50" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="cost">Cost</label></td>
+              <td class="value-cell"><input id="cost" type="number" step="0.01" placeholder="e.g. 39.50" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="weight">Weight (g)</label></td>
+              <td class="value-cell"><input id="weight" type="number" placeholder="e.g. 250" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="flavourProfile">Flavour profile</label></td>
+              <td class="value-cell"><input id="flavourProfile" placeholder="e.g. jasmine, bergamot" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="processing1">1. Processing</label></td>
+              <td class="value-cell"><input id="processing1" placeholder="e.g. Washed" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="card">
-      <div class="grid">
-        <div>
-          <label for="name">Name</label>
-          <input id="name" placeholder="e.g. Elida Geisha" />
-        </div>
-        <div>
-          <label for="roaster">Roaster</label>
-          <input id="roaster" placeholder="e.g. The Barn" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="roastDate">Roast date</label>
-          <input id="roastDate" type="date" />
-        </div>
-        <div>
-          <label for="roastType">Roast type</label>
-          <input id="roastType" placeholder="e.g. Espresso/Filter/Omni" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="degreeOfRoast">Degree of Roast</label>
-          <input id="degreeOfRoast" placeholder="e.g. City, Full City" />
-        </div>
-        <div>
-          <label for="customDegreeOfRoast">Custom degree of Roast</label>
-          <input id="customDegreeOfRoast" placeholder="Custom description" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="blend">Blend</label>
-          <input id="blend" placeholder="e.g. Single origin / Blend name" />
-        </div>
-        <div>
-          <label for="weight">Weight (g)</label>
-          <input id="weight" type="number" placeholder="e.g. 250" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="cost">Cost</label>
-          <input id="cost" type="number" step="0.01" placeholder="e.g. 39.50" />
-        </div>
-        <div>
-          <label for="flavourProfile">Flavour profile</label>
-          <input id="flavourProfile" placeholder="e.g. jasmine, bergamot" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="cuppingPoints">Cupping points</label>
-          <input id="cuppingPoints" type="number" step="0.1" placeholder="e.g. 87.5" />
-        </div>
-        <div>
-          <label for="website">Website</label>
-          <input id="website" type="url" placeholder="e.g. https://..." />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label><input id="decaf" type="checkbox" /> Decaffeinated</label>
-        </div>
-        <div>
-          <label for="ean">EAN / Articlenumber</label>
-          <input id="ean" placeholder="e.g. 123456789" />
-        </div>
-      </div>
-      <div class="grid-1">
-        <div>
-          <label for="notes">Notes</label>
-          <textarea id="notes" placeholder="Free text"></textarea>
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="rating">Rating</label>
-          <input id="rating" type="number" step="0.1" placeholder="e.g. 4.5" />
-        </div>
-        <div>
-          <label><input id="archived" type="checkbox" /> Archived</label>
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="frozenDate">Frozen Date</label>
-          <input id="frozenDate" type="date" />
-        </div>
-        <div>
-          <label for="unfrozenDate">Unfrozen Date</label>
-          <input id="unfrozenDate" type="date" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="freezingStorageType">Freezing Storage Type</label>
-          <input id="freezingStorageType" placeholder="e.g. COFFEE_BAG" />
-        </div>
-        <div>
-          <label for="frozenNote">Frozen Note</label>
-          <input id="frozenNote" placeholder="e.g. Lot split" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="country1">1. Country</label>
-          <input id="country1" placeholder="e.g. Panama" />
-        </div>
-        <div>
-          <label for="region1">1. Region</label>
-          <input id="region1" placeholder="e.g. Boquete" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="farm1">1. Farm</label>
-          <input id="farm1" placeholder="e.g. Elida Estate" />
-        </div>
-        <div>
-          <label for="farmer1">1. Farmer</label>
-          <input id="farmer1" placeholder="e.g. Lamastus Family Estates" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="elevation1">1. Elevation</label>
-          <input id="elevation1" placeholder="e.g. 1800m" />
-        </div>
-        <div>
-          <label for="variety1">1. Variety</label>
-          <input id="variety1" placeholder="e.g. Geisha" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="processing1">1. Processing</label>
-          <input id="processing1" placeholder="e.g. Washed" />
-        </div>
-        <div>
-          <label for="harvested1">1. Harvested</label>
-          <input id="harvested1" placeholder="e.g. 2024" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="percentage1">1. Percentage</label>
-          <input id="percentage1" type="number" step="0.01" placeholder="e.g. 100" />
-        </div>
-        <div>
-          <label for="beanCertification1">1. Bean certification</label>
-          <input id="beanCertification1" placeholder="e.g. Organic" />
-        </div>
-      </div>
-      <div class="grid">
-        <div>
-          <label for="fobPrice1">1. Fob Price</label>
-          <input id="fobPrice1" type="number" step="0.01" placeholder="e.g. 12.34" />
-        </div>
-        <div>
-          <label for="purchasingPrice1">1. Purchasing Price</label>
-          <input id="purchasingPrice1" type="number" step="0.01" placeholder="e.g. 39.50" />
-        </div>
+      <div class="table-wrap">
+        <table class="form-table">
+          <colgroup>
+            <col class="checkbox" />
+            <col class="label" />
+            <col />
+          </colgroup>
+          <tbody id="mainRows">
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="roaster">Roaster</label></td>
+              <td class="value-cell"><input id="roaster" placeholder="e.g. The Barn" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="roastDate">Roast date</label></td>
+              <td class="value-cell"><input id="roastDate" type="date" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="roastType">Roast type</label></td>
+              <td class="value-cell"><input id="roastType" placeholder="e.g. Espresso/Filter/Omni" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="degreeOfRoast">Degree of Roast</label></td>
+              <td class="value-cell"><input id="degreeOfRoast" placeholder="e.g. City, Full City" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="customDegreeOfRoast">Custom degree of Roast</label></td>
+              <td class="value-cell"><input id="customDegreeOfRoast" placeholder="Custom description" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="blend">Blend</label></td>
+              <td class="value-cell"><input id="blend" placeholder="e.g. Single origin / Blend name" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="cuppingPoints">Cupping points</label></td>
+              <td class="value-cell"><input id="cuppingPoints" type="number" step="0.1" placeholder="e.g. 87.5" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="website">Website</label></td>
+              <td class="value-cell"><input id="website" type="url" placeholder="e.g. https://..." /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="decaf">Decaffeinated</label></td>
+              <td class="value-cell"><input id="decaf" type="checkbox" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="ean">EAN / Articlenumber</label></td>
+              <td class="value-cell"><input id="ean" placeholder="e.g. 123456789" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="notes">Notes</label></td>
+              <td class="value-cell"><textarea id="notes" placeholder="Free text"></textarea></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="rating">Rating</label></td>
+              <td class="value-cell"><input id="rating" type="number" step="0.1" placeholder="e.g. 4.5" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="archived">Archived</label></td>
+              <td class="value-cell"><input id="archived" type="checkbox" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="frozenDate">Frozen Date</label></td>
+              <td class="value-cell"><input id="frozenDate" type="date" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="unfrozenDate">Unfrozen Date</label></td>
+              <td class="value-cell"><input id="unfrozenDate" type="date" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="freezingStorageType">Freezing Storage Type</label></td>
+              <td class="value-cell"><input id="freezingStorageType" placeholder="e.g. COFFEE_BAG" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="frozenNote">Frozen Note</label></td>
+              <td class="value-cell"><input id="frozenNote" placeholder="e.g. Lot split" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="country1">1. Country</label></td>
+              <td class="value-cell"><input id="country1" placeholder="e.g. Panama" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="region1">1. Region</label></td>
+              <td class="value-cell"><input id="region1" placeholder="e.g. Boquete" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="farm1">1. Farm</label></td>
+              <td class="value-cell"><input id="farm1" placeholder="e.g. Elida Estate" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="farmer1">1. Farmer</label></td>
+              <td class="value-cell"><input id="farmer1" placeholder="e.g. Lamastus Family Estates" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="elevation1">1. Elevation</label></td>
+              <td class="value-cell"><input id="elevation1" placeholder="e.g. 1800m" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="variety1">1. Variety</label></td>
+              <td class="value-cell"><input id="variety1" placeholder="e.g. Geisha" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="harvested1">1. Harvested</label></td>
+              <td class="value-cell"><input id="harvested1" placeholder="e.g. 2024" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="percentage1">1. Percentage</label></td>
+              <td class="value-cell"><input id="percentage1" type="number" step="0.01" placeholder="e.g. 100" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="beanCertification1">1. Bean certification</label></td>
+              <td class="value-cell"><input id="beanCertification1" placeholder="e.g. Organic" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="fobPrice1">1. Fob Price</label></td>
+              <td class="value-cell"><input id="fobPrice1" type="number" step="0.01" placeholder="e.g. 12.34" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"></td>
+              <td class="label-cell"><label for="purchasingPrice1">1. Purchasing Price</label></td>
+              <td class="value-cell"><input id="purchasingPrice1" type="number" step="0.01" placeholder="e.g. 39.50" /></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="actions">
         <button id="exportBtn">Export data</button>
@@ -319,63 +335,23 @@ Wenn ein Wert fehlt, verwende null.`;
       { id: 'fobPrice1', label: '1. Fob Price', json: 'fobPrice1' },
       { id: 'purchasingPrice1', label: '1. Purchasing Price', json: 'purchasingPrice1' }
     ];
-    // Render extraction checkboxes as the first column of each row
+    // Render extraction checkboxes as the first column of each row in the table
     extraFields.forEach(f => {
       const inputEl = $(f.id);
       if (!inputEl) return;
-      const row = inputEl.closest('div');
+      const row = inputEl.closest('tr');
       if (!row) return;
+      const firstCell = row.querySelector('td.checkbox-cell');
+      if (!firstCell) return;
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.id = `chk_${f.id}`;
       cb.className = 'extract-toggle';
       cb.title = 'Include in AI extraction for this field';
-      // Insert as the first child to occupy the dedicated first grid column
-      row.insertBefore(cb, row.firstChild);
+      firstCell.innerHTML = '';
+      firstCell.appendChild(cb);
     });
 
-    // Move default rows into the default box below URL
-    (function moveDefaultRows(){
-      const defaultRows = document.getElementById('defaultRows');
-      if (!defaultRows) return;
-      // Ensure a 'price' field exists in DOM
-      if (!document.getElementById('price')) {
-        const row = document.createElement('div');
-        const spacer = document.createElement('span');
-        spacer.className = 'extract-spacer';
-        const label = document.createElement('label');
-        label.setAttribute('for', 'price');
-        label.textContent = 'Price';
-        const input = document.createElement('input');
-        input.id = 'price';
-        input.type = 'number';
-        input.step = '0.01';
-        input.placeholder = 'e.g. 39.50';
-        row.appendChild(spacer);
-        row.appendChild(label);
-        row.appendChild(input);
-        defaultRows.appendChild(row);
-      }
-      // Move default rows: name, flavor, processing, weight, price, cost
-      const ids = ['name','flavourProfile','processing1','weight','price','cost'];
-      ids.forEach(id => {
-        const el = $(id);
-        if (!el) return;
-        let row = el;
-        while (row && row.parentElement && !(row.parentElement.classList.contains('grid') || row.parentElement.classList.contains('grid-1'))) {
-          row = row.parentElement;
-        }
-        if (row && row.parentElement && (row.parentElement.classList.contains('grid') || row.parentElement.classList.contains('grid-1'))) {
-          // Add spacer in first column if no checkbox present
-          if (!row.firstElementChild || !row.firstElementChild.classList.contains('extract-toggle')) {
-            const spacer = document.createElement('span');
-            spacer.className = 'extract-spacer';
-            row.insertBefore(spacer, row.firstChild);
-          }
-          defaultRows.appendChild(row);
-        }
-      });
-    })();
 
     btn.addEventListener("click", async () => {
       const url = $("url").value.trim();
