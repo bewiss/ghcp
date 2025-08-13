@@ -1,132 +1,150 @@
-# Coffee Extractor (Node.js)
+# Get coffee bean information for BEANCONQUERER import
 
-Scrape a coffee product page and extract structured product data (price, weight, flavor notes, processing, farmer) using the GitHub Models (Copilot) API.
+Scrape a coffee product page, extract structured data with AI, and export to Excel. This project provides:
+
+- A web UI (served from `public/index.html`)
+- An Express API (`server.js`) to extract data and export an `.xlsx`
+- A reusable scraper + extractor module (`coffeeextractor.js`)
+
+Works with either GitHub Models (Copilot) or OpenAI as the LLM provider.
+
+## Requirements
+
+- Node.js 18+ (Node 20+ recommended). The code uses the built-in Fetch API.
+- One of:
+  - GitHub token with Copilot/Models access (for provider "github"), or
+  - OpenAI API key (for provider "openai").
+
+## Quick start (Windows PowerShell)
+
+```powershell
+# 1) Install dependencies
+npm install
+
+# 2) Create .env with your provider and token
+# Example for GitHub Models (default provider):
+@"
+PROVIDER=github
+GITHUB_TOKEN=ghp_your_token_here
+PORT=3033
+"@ | Out-File -Encoding utf8 .env
+
+# Or for OpenAI:
+@"
+PROVIDER=openai
+OPENAI_API_KEY=sk-your-key-here
+PORT=3033
+"@ | Out-File -Encoding utf8 .env
+
+# 3) Start the web app
+npm start
+
+# App will listen on http://localhost:3033 (unless you changed PORT)
+```
+
+Then open http://localhost:3033 in your browser. The UI is pre-filled with a sample product URL and lets you:
+
+- Get info: calls `/api/extract` to scrape + extract using the chosen provider
+- Edit fields: adjust any value manually
+- Export data: posts to `/api/export` and downloads `coffee-data.xlsx`
 
 ## How it works
 
-1. Scrape page HTML with axios and parse text with cheerio.
-2. Send a compact prompt with the scraped text to GitHub Models (`gpt-4o-mini`).
-3. Parse the model response for a JSON object with keys: `price`, `weight`, `flavor`, `processing`, `farmer`.
+1. `scrapeCoffeePage(url)` downloads the page HTML (axios) and extracts visible text (cheerio).
+2. `extractCoffeeData(rawText, promptOverride?)` sends a prompt + text to the LLM and expects a JSON object with keys:
+   - name, roaster, price, cost, weight, flavor, processing, farmer (missing values are allowed as null)
+3. The server exposes endpoints and the UI consumes them. Excel export is generated with ExcelJS.
 
-Entrypoint: `coffeeextractor.js` (ESM).
+Default model: `gpt-4o-mini` (changeable in `coffeeextractor.js`). The default prompt is bilingual (German/English).
 
-## Prerequisites
+## Configuration (.env)
 
-- Node.js 18+ (Fetch API is used without polyfills; Node 20+ recommended)
-- A GitHub token that can access GitHub Models (Copilot) or an OpenAI API key. See “Auth notes” below.
+Create a `.env` file in the project root. Supported variables:
 
-## Setup
+- PROVIDER: `github` (default if not set) or `openai`
+- GITHUB_TOKEN: required if PROVIDER=github
+- OPENAI_API_KEY: required if PROVIDER=openai
+- PORT: optional, defaults to 3033
 
-1. Install dependencies
-   - npm: `npm install`
+Auto-detection: If PROVIDER is empty and your `GITHUB_TOKEN` looks like an OpenAI key (starts with `sk-`), the code switches to `openai` and warns. Prefer setting the correct variable explicitly.
 
-2. Configure environment variables
-   - Copy `.env.example` to `.env` and set your token:
-     - PowerShell: `Copy-Item .env.example .env`
-     - Bash: `cp .env.example .env`
-   - Edit `.env` and set one of:
-     - GitHub Models (default):
-       - `PROVIDER=github` (or omit; github is default)
-       - `GITHUB_TOKEN=YOUR_GITHUB_TOKEN_WITH_COPILOT_ACCESS`
-     - OpenAI:
-       - `PROVIDER=openai`
-       - `OPENAI_API_KEY=sk-...`
+## Endpoints
 
-## Build and run
+- GET `/healthz`
+  - Returns `{ ok: true }` when the server is up.
 
-This project is a plain Node.js ESM script and does not require a build step.
+- GET `/api/extract?url=...`
+  - Scrapes the given product URL and runs AI extraction.
+  - Response: `{ ok: true, data: { name, roaster, price, cost, weight, flavor, processing, farmer } }`.
+  - If `url` is omitted, a sample The Barn product is used.
 
-- Quickstart (Windows PowerShell):
+- POST `/api/extract`
+  - JSON body: `{ "url": "https://...", "prompt": "optional override" }`
+  - Returns the same shape as the GET endpoint.
 
-```powershell
-# Install dependencies
-npm install
+- POST `/api/export`
+  - JSON body: accepts all fields shown in the UI (see `public/index.html`).
+  - Returns: an Excel file `coffee-data.xlsx` with three sheets:
+    - Readme_and_Consistency_Check
+    - Beans (headers at A1; submitted data in row 2)
+    - Bean_Information (enums/hints; headers at A3)
 
-# (Optional) create your env file from the example
-Copy-Item .env.example .env
-
-# Run the script
-node coffeeextractor.js
-```
-
-- Optional npm script: add this to `package.json` and use `npm start`.
-
-```json
-{
-  "scripts": {
-    "start": "node coffeeextractor.js"
-  }
-}
-```
-
-Then run:
+### PowerShell examples
 
 ```powershell
-npm start
+# Extract (GET)
+iwr "http://localhost:3033/api/extract?url=https://thebarn.de/de/products/elida-gesha" | select -ExpandProperty Content
+
+# Extract (POST with custom prompt)
+$body = @{ url = "https://thebarn.de/de/products/elida-gesha"; prompt = "Your custom prompt here" } | ConvertTo-Json
+iwr http://localhost:3033/api/extract -Method Post -ContentType 'application/json' -Body $body | select -ExpandProperty Content
+
+# Export (download xlsx)
+$payload = @{ name="..."; roaster="..."; price=39.5; weight=250; flavourProfile="..."; processing1="..."; farmer1="..." } | ConvertTo-Json
+iwr http://localhost:3033/api/export -Method Post -ContentType 'application/json' -Body $payload -OutFile coffee-data.xlsx
 ```
-
-## Run
-
-- Run the script: `node coffeeextractor.js`
-
-By default it targets: `https://thebarn.de/de/products/elida-gesha`. Edit the `url` in `main()` to point to a different product page.
-
-Example output (shape only):
-
-```json
-{
-  "price": "€14.90",
-  "weight": "250g",
-  "flavor": "jasmine, bergamot",
-  "processing": "washed",
-  "farmer": "Wilford Lamastus"
-}
-```
-
-## Configuration
-
-- Model: `gpt-4o-mini` (change in `extractCoffeeData()` if needed)
-- Headers: User-Agent is set for both scraping and API calls
-- Language: Prompt supports German and English product pages
-
-## Auth notes (GitHub Models / Copilot)
-
-- Provider selection:
-  - GitHub Models (default): calls `https://api.githubcopilot.com/chat/completions` and requires a valid `GITHUB_TOKEN` with Copilot/Models access.
-  - OpenAI: calls `https://api.openai.com/v1/chat/completions` and requires `OPENAI_API_KEY`.
-- If your token starts with `sk-`, it’s an OpenAI key. Either set `PROVIDER=openai` and move the key to `OPENAI_API_KEY`, or rely on the auto-detection.
-- Common ways to obtain a token:
-  - Fine-grained or classic PAT with Copilot/Models access (availability depends on your plan)
-  - Or a token from `gh auth token` if your account has the proper entitlements
-- If you see 401/403, verify your subscription, token validity, and scopes.
 
 ## Troubleshooting
 
-- 400 Bad request (GitHub Models)
-  - Authorization header is badly formatted. Ensure you are using a GitHub token (not an OpenAI key) and that it’s set as `GITHUB_TOKEN`.
-- 401 Unauthorized
-  - Token invalid or missing required Copilot/Models access. Recreate token or use an account with Copilot enabled.
-- 403 Forbidden
-  - Copilot/Models likely not enabled for this account or organization.
-- 429 Rate limited
-  - Reduce frequency, add backoff, or try later.
-- "No JSON detected in model output"
-  - The model did not return a parsable JSON block; rerun or tighten the prompt.
-- "Failed to parse JSON"
-  - The response looked like JSON but was malformed; rerun or manually adjust parsing.
+- App doesn’t start with `npm start`
+  - Check Node version: `node -v` (must be 18+). Reinstall if needed.
+  - Ensure `npm install` completed without errors.
+  - Verify `.env` exists and contains the correct token for your provider.
+
+- 400/401/403 from provider
+  - 400: Likely a malformed Authorization header or wrong token type.
+  - 401: Token invalid or lacks access.
+  - 403: Copilot/Models not enabled for your account/org.
+
 - `fetch is not defined`
-  - Use Node 18+ (or add a fetch polyfill like `node-fetch`).
-- Scraping returns little or noisy text
-  - Some sites block bots or load content dynamically. You may need site-specific selectors or a headless browser.
+  - Use Node 18+ (or add a polyfill like `node-fetch`, though not needed on 18+).
 
-## Notes
+- “No JSON detected in model output” / “Failed to parse JSON”
+  - Rerun. Consider tightening the prompt or selecting fewer fields. The UI supports adding extra fields to the prompt.
 
-- Respect target sites’ Terms of Service and robots.txt. Use responsibly.
-- Avoid logging secrets. The script already warns against printing `process.env`.
-- For repeatable runs and CI, consider adding an npm script, CLI args for the URL, retries, and structured logging.
+- Scraping yields little/no text
+  - Some sites block bots or load data dynamically. You may need site-specific selectors or a headless browser.
+
+## Development notes
+
+- UI lives in `public/index.html`. It pre-fills a sample URL and exposes “Get info” and “Export data”.
+- Server is `server.js`. It serves static files, exposes API routes, and listens on `PORT` or 3033.
+- Core logic is in `coffeeextractor.js` (also runnable directly as a CLI script). When run directly, it uses the URL hard-coded in `main()`.
+- Model: change the `model` field in `extractCoffeeData()`.
 
 ## Project structure
 
-- `coffeeextractor.js` — main script (scrape + extract)
-- `package.json` — ESM config and dependencies (axios, cheerio, dotenv)
-- `.env.example` — sample environment variables
+- `server.js` — Express server, API endpoints, static hosting, Excel export
+- `coffeeextractor.js` — scraping + AI extraction helpers; also runnable standalone
+- `public/index.html` — simple UI for extraction + export
+- `package.json` — ESM project, scripts, dependencies (axios, cheerio, dotenv, express, exceljs)
+- `.env` — provider config and tokens (not committed)
+
+## Security
+
+- Don’t commit secrets. Keep tokens in `.env` or an external secret store.
+- Avoid logging environment variables. The code already warns against printing `process.env`.
+
+---
+
+Happy brewing!

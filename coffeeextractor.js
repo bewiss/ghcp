@@ -37,14 +37,17 @@ export async function extractCoffeeData(rawText, promptOverride) {
   const defaultTemplate = `
   Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
   Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
-  - Preis in EUR ohne Wärhungszeichen
+  - Name des Kaffees/Produkts
+  - Name der Rösterei
+  - Preis in EUR ohne Währungszeichen
+  - Kosten/Einkaufspreis in EUR ohne Währungszeichen (falls abweichend)
   - Gewicht in Gramm ohne Einheit
   - Geschmacksnoten
   - Aufbereitung (Processing)
   - Farmer / Produzent
 
   Rückgabe im JSON-Format mit den Schlüsseln:
-  { "price": "...", "weight": "...", "flavor": "...", "processing": "...", "farmer": "..." }
+  { "name": "...", "roaster": "...", "price": "...", "cost": "...", "weight": "...", "flavor": "...", "processing": "...", "farmer": "..." }
   Wenn ein Wert fehlt, verwende null.
   `;
 

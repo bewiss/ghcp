@@ -37,6 +37,26 @@
   td.value-cell input, td.value-cell textarea { width: 100%; }
   .extract-toggle { margin: 0; }
   .extract-spacer { display: inline-block; width: 16px; height: 16px; }
+
+  /* Remove native number input spinners */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Modern generic */
+  }
+
+  /* Toggle block for revealing checkbox rows */
+  .toggle-block { display:flex; align-items:center; justify-content: space-between; background:#10161d; border:1px solid #202833; border-radius: 10px; padding: 10px 12px; cursor:pointer; font-weight:600; color: var(--fg); }
+  .toggle-block:hover { background:#0f151c; }
+  .toggle-block .toggle-text { font-weight: 600; }
+  .toggle-block small { color: var(--muted); font-weight: normal; }
+  .chev { transition: transform .2s ease; }
+  .toggle-block[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .hidden-row { display: none; }
   </style>
 </head>
 <body>
@@ -71,6 +91,11 @@
             </tr>
             <tr>
               <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="roaster">Roaster</label></td>
+              <td class="value-cell"><input id="roaster" placeholder="e.g. The Barn" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
               <td class="label-cell"><label for="price">Price</label></td>
               <td class="value-cell"><input id="price" type="number" step="0.01" placeholder="e.g. 39.50" /></td>
             </tr>
@@ -91,8 +116,13 @@
             </tr>
             <tr>
               <td class="checkbox-cell"><span class="extract-spacer"></span></td>
-              <td class="label-cell"><label for="processing1">1. Processing</label></td>
+              <td class="label-cell"><label for="processing1">Processing</label></td>
               <td class="value-cell"><input id="processing1" placeholder="e.g. Washed" /></td>
+            </tr>
+            <tr>
+              <td class="checkbox-cell"><span class="extract-spacer"></span></td>
+              <td class="label-cell"><label for="farmer1">Farmer</label></td>
+              <td class="value-cell"><input id="farmer1" placeholder="e.g. Lamastus Family Estates" /></td>
             </tr>
           </tbody>
         </table>
@@ -100,6 +130,10 @@
     </div>
 
     <div class="card">
+      <div id="moreToggle" class="toggle-block" aria-expanded="false" style="margin-bottom:10px;">
+        <span class="toggle-text">more values ...</span>
+        <span class="chev">›</span>
+      </div>
       <div class="table-wrap">
         <table class="form-table">
           <colgroup>
@@ -108,11 +142,6 @@
             <col />
           </colgroup>
           <tbody id="mainRows">
-            <tr>
-              <td class="checkbox-cell"></td>
-              <td class="label-cell"><label for="roaster">Roaster</label></td>
-              <td class="value-cell"><input id="roaster" placeholder="e.g. The Barn" /></td>
-            </tr>
             <tr>
               <td class="checkbox-cell"></td>
               <td class="label-cell"><label for="roastDate">Roast date</label></td>
@@ -210,11 +239,6 @@
             </tr>
             <tr>
               <td class="checkbox-cell"></td>
-              <td class="label-cell"><label for="farmer1">1. Farmer</label></td>
-              <td class="value-cell"><input id="farmer1" placeholder="e.g. Lamastus Family Estates" /></td>
-            </tr>
-            <tr>
-              <td class="checkbox-cell"></td>
               <td class="label-cell"><label for="elevation1">1. Elevation</label></td>
               <td class="value-cell"><input id="elevation1" placeholder="e.g. 1800m" /></td>
             </tr>
@@ -294,6 +318,7 @@
   $("prompt").value = `Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
 Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
 - Name des Kaffees (name)
+- Rösterei (roaster)
 - Preis in EUR ohne Währungszeichen (price)
 - Kosten in EUR ohne Währungszeichen (cost)
 - Gewicht in Gramm ohne Einheit (weight)
@@ -301,12 +326,11 @@ Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
 - Aufbereitung (Processing) (processing)
 
 Rückgabe im JSON-Format mit den Schlüsseln:
-{ "name": "...", "price": "...", "cost": "...", "weight": "...", "flavor": "...", "processing": "..." }
+{ "name": "...", "roaster": "...", "price": "...", "cost": "...", "weight": "...", "flavor": "...", "processing": "..." }
 Wenn ein Wert fehlt, verwende null.`;
 
     // Render extra field checkboxes (exclude default keys: name, price, cost, weight, flavor, processing)
-    const extraFields = [
-      { id: 'roaster', label: 'Roaster', json: 'roaster' },
+  const extraFields = [
       { id: 'roastDate', label: 'Roast date', json: 'roastDate' },
       { id: 'roastType', label: 'Roast type', json: 'roastType' },
       { id: 'degreeOfRoast', label: 'Degree of Roast', json: 'degreeOfRoast' },
@@ -314,6 +338,7 @@ Wenn ein Wert fehlt, verwende null.`;
       { id: 'blend', label: 'Blend', json: 'blend' },
       { id: 'cuppingPoints', label: 'Cupping points', json: 'cuppingPoints' },
       { id: 'website', label: 'Website', json: 'website' },
+  { id: 'decaf', label: 'Decaffeinated', json: 'decaf' },
       { id: 'ean', label: 'EAN / Articlenumber', json: 'ean' },
       { id: 'notes', label: 'Notes', json: 'notes' },
       { id: 'rating', label: 'Rating', json: 'rating' },
@@ -350,7 +375,30 @@ Wenn ein Wert fehlt, verwende null.`;
       cb.title = 'Include in AI extraction for this field';
       firstCell.innerHTML = '';
       firstCell.appendChild(cb);
+      // mark rows that have an extraction checkbox
+      row.classList.add('has-checkbox');
     });
+
+    // Initially hide rows that have an extraction checkbox, reveal on toggle
+    const moreToggle = document.getElementById('moreToggle');
+    function setRowsVisibility(expanded) {
+      document.querySelectorAll('#mainRows tr.has-checkbox').forEach(tr => {
+        if (expanded) tr.classList.remove('hidden-row');
+        else tr.classList.add('hidden-row');
+      });
+      if (moreToggle) {
+        moreToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        const textEl = moreToggle.querySelector('.toggle-text');
+        if (textEl) textEl.textContent = expanded ? 'hide values' : 'more values ...';
+      }
+    }
+    setRowsVisibility(false);
+    if (moreToggle) {
+      moreToggle.addEventListener('click', () => {
+        const expanded = moreToggle.getAttribute('aria-expanded') === 'true';
+        setRowsVisibility(!expanded);
+      });
+    }
 
 
     btn.addEventListener("click", async () => {
@@ -381,6 +429,7 @@ Wenn ein Wert fehlt, verwende null.`;
   const d = json.data || {};
   // Map extraction to matching fields
   $("name").value = d?.name ?? "";
+  $("roaster").value = d?.roaster ?? "";
   $("weight").value = d?.weight ?? "";
   $("flavourProfile").value = d?.flavor ?? "";
   $("processing1").value = d?.processing ?? "";
