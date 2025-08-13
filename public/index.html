@@ -15,12 +15,40 @@
     label { display:block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
     input, textarea { width: 100%; background: #0e141a; color: var(--fg); border: 1px solid #263041; border-radius: 8px; padding: 10px 12px; outline: none; }
     textarea { min-height: 90px; resize: vertical; }
-    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
     .grid-1 { display:grid; grid-template-columns: 1fr; gap: 12px; }
     .actions { display:flex; gap: 12px; margin-top: 14px; }
     button { background: var(--acc); color: #06223b; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
     button:disabled { opacity: .6; cursor: not-allowed; }
     small { color: var(--muted); }
+
+  /* Make each field look like a clean row: [checkbox] Attribute: Value */
+  .grid > div, .grid-1 > div {
+    display: grid;
+    grid-template-columns: auto 220px 1fr; /* [ ] | Label | Value */
+    align-items: center; /* vertical align */
+    gap: 10px;
+    border: 1px solid #202833;
+    background: #10161d;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+  /* Label with colon */
+  .grid > div > label,
+  .grid-1 > div > label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0;
+    color: var(--muted);
+  }
+  .grid > div > label::after,
+  .grid-1 > div > label::after { content: ": "; margin-left: 2px; }
+  /* Inputs occupy the 3rd column and fill */
+  .grid > div > input, .grid > div > textarea,
+  .grid-1 > div > input, .grid-1 > div > textarea { width: 100%; }
+  .extract-toggle { margin: 0; }
+  .extract-spacer { width: 16px; height: 16px; display: inline-block; }
   </style>
 </head>
 <body>
@@ -35,6 +63,11 @@
         <button id="getInfoBtn">Get info</button>
         <small id="status"></small>
       </div>
+    </div>
+
+    <!-- Default values box (rows moved here via JS) -->
+    <div class="card" id="defaultCard">
+      <div class="grid" id="defaultRows"></div>
     </div>
 
     <div class="card">
@@ -213,11 +246,7 @@
       <small>Leave empty to use the default system prompt.</small>
     </div>
 
-    <div class="card" style="margin-top: 16px;">
-      <label>Additional fields to extract</label>
-      <div id="extraFields" class="grid"></div>
-      <small>Select fields to include in the AI prompt. Extracted values will be written into the matching inputs above.</small>
-    </div>
+  <!-- Inline extraction checkboxes are now rendered in front of each corresponding input label; removed separate list -->
   </div>
 
   <script>
@@ -229,7 +258,7 @@
 
     // Map all Beans headers to input ids
     const fieldIds = [
-      'name','roaster','roastDate','roastType','degreeOfRoast','customDegreeOfRoast','blend','weight','cost','flavourProfile','cuppingPoints','decaf','website','ean','notes','rating','archived','frozenDate','unfrozenDate','freezingStorageType','frozenNote','country1','region1','farm1','farmer1','elevation1','variety1','processing1','harvested1','percentage1','beanCertification1','fobPrice1','purchasingPrice1'
+      'name','roaster','roastDate','roastType','degreeOfRoast','customDegreeOfRoast','blend','weight','price','cost','flavourProfile','cuppingPoints','decaf','website','ean','notes','rating','archived','frozenDate','unfrozenDate','freezingStorageType','frozenNote','country1','region1','farm1','farmer1','elevation1','variety1','processing1','harvested1','percentage1','beanCertification1','fobPrice1','purchasingPrice1'
     ];
 
     function getFormData() {
@@ -245,29 +274,28 @@
       return data;
     }
 
-    // Default prompt content mirrors extractCoffeeData default
-    $("prompt").value = `Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
+  // Default prompt content mirrors extractCoffeeData default
+  $("prompt").value = `Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
 Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
-- Preis in EUR ohne Wärhungszeichen
-- Gewicht in Gramm ohne Einheit
-- Geschmacksnoten
-- Aufbereitung (Processing)
-- Farmer / Produzent
+- Name des Kaffees (name)
+- Preis in EUR ohne Währungszeichen (price)
+- Kosten in EUR ohne Währungszeichen (cost)
+- Gewicht in Gramm ohne Einheit (weight)
+- Geschmacksnoten (flavor)
+- Aufbereitung (Processing) (processing)
 
 Rückgabe im JSON-Format mit den Schlüsseln:
-{ "price": "...", "weight": "...", "flavor": "...", "processing": "...", "farmer": "..." }
+{ "name": "...", "price": "...", "cost": "...", "weight": "...", "flavor": "...", "processing": "..." }
 Wenn ein Wert fehlt, verwende null.`;
 
-    // Render extra field checkboxes (exclude default keys: price, weight, flavor, processing, farmer)
+    // Render extra field checkboxes (exclude default keys: name, price, cost, weight, flavor, processing)
     const extraFields = [
-      { id: 'name', label: 'Name', json: 'name' },
       { id: 'roaster', label: 'Roaster', json: 'roaster' },
       { id: 'roastDate', label: 'Roast date', json: 'roastDate' },
       { id: 'roastType', label: 'Roast type', json: 'roastType' },
       { id: 'degreeOfRoast', label: 'Degree of Roast', json: 'degreeOfRoast' },
       { id: 'customDegreeOfRoast', label: 'Custom degree of Roast', json: 'customDegreeOfRoast' },
       { id: 'blend', label: 'Blend', json: 'blend' },
-      { id: 'cost', label: 'Cost', json: 'cost' },
       { id: 'cuppingPoints', label: 'Cupping points', json: 'cuppingPoints' },
       { id: 'website', label: 'Website', json: 'website' },
       { id: 'ean', label: 'EAN / Articlenumber', json: 'ean' },
@@ -291,13 +319,63 @@ Wenn ein Wert fehlt, verwende null.`;
       { id: 'fobPrice1', label: '1. Fob Price', json: 'fobPrice1' },
       { id: 'purchasingPrice1', label: '1. Purchasing Price', json: 'purchasingPrice1' }
     ];
-    const extraFieldsEl = $("extraFields");
+    // Render extraction checkboxes as the first column of each row
     extraFields.forEach(f => {
-      const wrap = document.createElement('div');
-      const id = `chk_${f.id}`;
-      wrap.innerHTML = `<label><input type="checkbox" id="${id}" /> ${f.label}</label>`;
-      extraFieldsEl.appendChild(wrap);
+      const inputEl = $(f.id);
+      if (!inputEl) return;
+      const row = inputEl.closest('div');
+      if (!row) return;
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = `chk_${f.id}`;
+      cb.className = 'extract-toggle';
+      cb.title = 'Include in AI extraction for this field';
+      // Insert as the first child to occupy the dedicated first grid column
+      row.insertBefore(cb, row.firstChild);
     });
+
+    // Move default rows into the default box below URL
+    (function moveDefaultRows(){
+      const defaultRows = document.getElementById('defaultRows');
+      if (!defaultRows) return;
+      // Ensure a 'price' field exists in DOM
+      if (!document.getElementById('price')) {
+        const row = document.createElement('div');
+        const spacer = document.createElement('span');
+        spacer.className = 'extract-spacer';
+        const label = document.createElement('label');
+        label.setAttribute('for', 'price');
+        label.textContent = 'Price';
+        const input = document.createElement('input');
+        input.id = 'price';
+        input.type = 'number';
+        input.step = '0.01';
+        input.placeholder = 'e.g. 39.50';
+        row.appendChild(spacer);
+        row.appendChild(label);
+        row.appendChild(input);
+        defaultRows.appendChild(row);
+      }
+      // Move default rows: name, flavor, processing, weight, price, cost
+      const ids = ['name','flavourProfile','processing1','weight','price','cost'];
+      ids.forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        let row = el;
+        while (row && row.parentElement && !(row.parentElement.classList.contains('grid') || row.parentElement.classList.contains('grid-1'))) {
+          row = row.parentElement;
+        }
+        if (row && row.parentElement && (row.parentElement.classList.contains('grid') || row.parentElement.classList.contains('grid-1'))) {
+          // Add spacer in first column if no checkbox present
+          if (!row.firstElementChild || !row.firstElementChild.classList.contains('extract-toggle')) {
+            const spacer = document.createElement('span');
+            spacer.className = 'extract-spacer';
+            row.insertBefore(spacer, row.firstChild);
+          }
+          defaultRows.appendChild(row);
+        }
+      });
+    })();
 
     btn.addEventListener("click", async () => {
       const url = $("url").value.trim();
@@ -326,10 +404,12 @@ Wenn ein Wert fehlt, verwende null.`;
         if (!json.ok) throw new Error(json.error || "Request failed");
   const d = json.data || {};
   // Map extraction to matching fields
+  $("name").value = d?.name ?? "";
   $("weight").value = d?.weight ?? "";
   $("flavourProfile").value = d?.flavor ?? "";
   $("processing1").value = d?.processing ?? "";
-  $("farmer1").value = d?.farmer ?? "";
+  if ($("price")) $("price").value = d?.price ?? "";
+  $("cost").value = (d?.cost ?? d?.price ?? "");
   $("website").value = $("url").value;
   // Apply any additionally requested fields
   selected.forEach(f => {
