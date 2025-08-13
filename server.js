@@ -29,6 +29,21 @@ app.get("/api/extract", async (req, res) => {
   }
 });
 
+// POST variant that supports prompt override
+app.post("/api/extract", async (req, res) => {
+  try {
+    const url = (req.body?.url || "https://thebarn.de/de/products/elida-gesha").toString();
+    const prompt = req.body?.prompt || null;
+    const rawText = await scrapeCoffeePage(url);
+    if (!rawText) return res.status(502).json({ ok: false, error: "Scrape failed" });
+    const data = await extractCoffeeData(rawText, prompt);
+    return res.json({ ok: true, data });
+  } catch (e) {
+    console.error("POST /api/extract error:", e);
+    return res.status(500).json({ ok: false, error: e?.message || "Unknown error" });
+  }
+});
+
 // API: Export provided data to Excel and trigger download
 app.post("/api/export", async (req, res) => {
   try {

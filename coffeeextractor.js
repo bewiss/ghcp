@@ -33,8 +33,8 @@ export async function scrapeCoffeePage(url) {
 /**
  * Step 2: Extract structured coffee data using GPT (GitHub Models or OpenAI)
  */
-export async function extractCoffeeData(rawText) {
-  const prompt = `
+export async function extractCoffeeData(rawText, promptOverride) {
+  const defaultTemplate = `
   Du bist ein Experte für Kaffeeprodukte (Deutsch und Englisch).
   Extrahiere die folgenden Attribute aus der Produktbeschreibung, falls vorhanden:
   - Preis in EUR ohne Wärhungszeichen
@@ -46,10 +46,10 @@ export async function extractCoffeeData(rawText) {
   Rückgabe im JSON-Format mit den Schlüsseln:
   { "price": "...", "weight": "...", "flavor": "...", "processing": "...", "farmer": "..." }
   Wenn ein Wert fehlt, verwende null.
-
-  Produktbeschreibung:
-  """${rawText}"""
   `;
+
+  const base = (promptOverride && String(promptOverride).trim()) || defaultTemplate.trim();
+  const prompt = `${base}\n\nProduktbeschreibung:\n"""${rawText}"""\n`;
 
   // Provider selection: github (default) or openai. Fallback if a sk- key is placed in GITHUB_TOKEN.
   let provider = (process.env.PROVIDER || "").toLowerCase().trim();
