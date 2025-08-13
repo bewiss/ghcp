@@ -212,6 +212,12 @@
       <textarea id="prompt" style="min-height: 180px;" placeholder="Enter custom prompt"></textarea>
       <small>Leave empty to use the default system prompt.</small>
     </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <label>Additional fields to extract</label>
+      <div id="extraFields" class="grid"></div>
+      <small>Select fields to include in the AI prompt. Extracted values will be written into the matching inputs above.</small>
+    </div>
   </div>
 
   <script>
@@ -252,14 +258,62 @@ Rückgabe im JSON-Format mit den Schlüsseln:
 { "price": "...", "weight": "...", "flavor": "...", "processing": "...", "farmer": "..." }
 Wenn ein Wert fehlt, verwende null.`;
 
+    // Render extra field checkboxes (exclude default keys: price, weight, flavor, processing, farmer)
+    const extraFields = [
+      { id: 'name', label: 'Name', json: 'name' },
+      { id: 'roaster', label: 'Roaster', json: 'roaster' },
+      { id: 'roastDate', label: 'Roast date', json: 'roastDate' },
+      { id: 'roastType', label: 'Roast type', json: 'roastType' },
+      { id: 'degreeOfRoast', label: 'Degree of Roast', json: 'degreeOfRoast' },
+      { id: 'customDegreeOfRoast', label: 'Custom degree of Roast', json: 'customDegreeOfRoast' },
+      { id: 'blend', label: 'Blend', json: 'blend' },
+      { id: 'cost', label: 'Cost', json: 'cost' },
+      { id: 'cuppingPoints', label: 'Cupping points', json: 'cuppingPoints' },
+      { id: 'website', label: 'Website', json: 'website' },
+      { id: 'ean', label: 'EAN / Articlenumber', json: 'ean' },
+      { id: 'notes', label: 'Notes', json: 'notes' },
+      { id: 'rating', label: 'Rating', json: 'rating' },
+      { id: 'archived', label: 'Archived', json: 'archived' },
+      { id: 'frozenDate', label: 'Frozen Date', json: 'frozenDate' },
+      { id: 'unfrozenDate', label: 'Unfrozen Date', json: 'unfrozenDate' },
+      { id: 'freezingStorageType', label: 'Freezing Storage Type', json: 'freezingStorageType' },
+      { id: 'frozenNote', label: 'Frozen Note', json: 'frozenNote' },
+      { id: 'country1', label: '1. Country', json: 'country1' },
+      { id: 'region1', label: '1. Region', json: 'region1' },
+      { id: 'farm1', label: '1. Farm', json: 'farm1' },
+      // farmer is a default field; we exclude farmer1 here to avoid duplication
+      { id: 'elevation1', label: '1. Elevation', json: 'elevation1' },
+      { id: 'variety1', label: '1. Variety', json: 'variety1' },
+      // processing is a default field; exclude processing1
+      { id: 'harvested1', label: '1. Harvested', json: 'harvested1' },
+      { id: 'percentage1', label: '1. Percentage', json: 'percentage1' },
+      { id: 'beanCertification1', label: '1. Bean certification', json: 'beanCertification1' },
+      { id: 'fobPrice1', label: '1. Fob Price', json: 'fobPrice1' },
+      { id: 'purchasingPrice1', label: '1. Purchasing Price', json: 'purchasingPrice1' }
+    ];
+    const extraFieldsEl = $("extraFields");
+    extraFields.forEach(f => {
+      const wrap = document.createElement('div');
+      const id = `chk_${f.id}`;
+      wrap.innerHTML = `<label><input type="checkbox" id="${id}" /> ${f.label}</label>`;
+      extraFieldsEl.appendChild(wrap);
+    });
+
     btn.addEventListener("click", async () => {
       const url = $("url").value.trim();
-      const prompt = $("prompt").value.trim();
+      let prompt = $("prompt").value.trim();
+      // Build prompt augmentation based on selected extra fields
+      const selected = extraFields.filter(f => (document.getElementById(`chk_${f.id}`)?.checked));
+      if (selected.length > 0) {
+        const extraJsonPairs = selected.map(f => `"${f.json}": "..."`).join(", ");
+        const aug = `\nZusätzlich extrahiere die folgenden Felder (falls vorhanden) und füge sie mit GENAU diesen Schlüsseln in dasselbe JSON ein: { ${extraJsonPairs} }`;
+        prompt = `${prompt}\n${aug}`;
+      }
       status.textContent = "Fetching...";
       btn.disabled = true;
       try {
         let resp;
-        if (prompt) {
+  if (prompt) {
           resp = await fetch(`/api/extract`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -277,6 +331,15 @@ Wenn ein Wert fehlt, verwende null.`;
   $("processing1").value = d?.processing ?? "";
   $("farmer1").value = d?.farmer ?? "";
   $("website").value = $("url").value;
+  // Apply any additionally requested fields
+  selected.forEach(f => {
+    const el = $(f.id);
+    if (!el) return;
+    const val = d?.[f.json];
+    if (typeof val === 'undefined' || val === null) return;
+    if (el.type === 'checkbox') el.checked = (String(val).toLowerCase() === 'true');
+    else el.value = String(val);
+  });
         status.textContent = "Done";
       } catch (e) {
         console.error(e);
